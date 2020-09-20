@@ -1,5 +1,6 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/device.h>
 #include <linux/fs.h>
 #include <asm/uaccess.h>
 
@@ -26,24 +27,42 @@ static ssize_t read(struct file *file, char *buffer, size_t size, loff_t *offset
     return size;
 }
 
-static int major;
 static struct file_operations fops = {
     .open = open,
     .release = release,
     .read = read
 };
+static dev_t devt;
+static struct class *dev_class;
+static struct device *dev;
 
 int init_module(void) {
+    int major;
     if ((major = register_chrdev(0, "checkers", &fops)) < 0) {
-        printk(KERN_ALERT "Failed to register checkers character device.\n");
-        return -1;
+        goto failure;
     }
 
-    printk(KERN_INFO "Major number for checkers devices: %d.\n", major);
+    devt = MKDEV(major, 0);
+    dev_class = class_create(THIS_MODULE, "checkers");
+    if (IS_ERR(dev_class)) {
+        goto failure;
+    }
+    dev = device_create(dev_class, NULL, devt, NULL, "checkers");
+    if (IS_ERR(dev)) {
+        class_destroy(dev_class);
+        goto failure;
+    }
 
     return 0;
+
+failure:
+    unregister_chrdev(major, "checkers");
+    printk(KERN_ALERT "Failed to register checkers character device.\n");
+    return -1;
 }
 
 void cleanup_module(void) {
-    unregister_chrdev(major, "checkers");
+    device_destroy(dev_class, devt);
+    class_destroy(dev_class);
+    unregister_chrdev(MAJOR(devt), "checkers");
 }
