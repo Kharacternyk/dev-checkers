@@ -1,6 +1,5 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
-#include <linux/device.h>
 #include <linux/fs.h>
 #include <linux/miscdevice.h>
 #include <asm/uaccess.h>
@@ -34,6 +33,7 @@ static struct file_operations fops = {
     .release = release,
     .read = read
 };
+
 static struct miscdevice dev = {
     .minor = MISC_DYNAMIC_MINOR,
     .name = "checkers",
@@ -42,14 +42,4 @@ static struct miscdevice dev = {
     .mode = 0666
 };
 
-int init_module(void) {
-    if (misc_register(&dev)) {
-        printk(KERN_ALERT "Failed to register checkers character device.\n");
-        return -1;
-    }
-    return 0;
-}
-
-void cleanup_module(void) {
-    misc_deregister(&dev);
-}
+module_misc_device(dev);
