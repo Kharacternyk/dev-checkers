@@ -2,6 +2,7 @@
 #include <linux/kernel.h>
 #include <linux/device.h>
 #include <linux/fs.h>
+#include <linux/cdev.h>
 #include <asm/uaccess.h>
 
 MODULE_LICENSE("GPL");
@@ -28,6 +29,7 @@ static ssize_t read(struct file *file, char *buffer, size_t size, loff_t *offset
 }
 
 static struct file_operations fops = {
+    .owner = THIS_MODULE,
     .open = open,
     .release = release,
     .read = read
@@ -35,14 +37,20 @@ static struct file_operations fops = {
 static dev_t maj_min;
 static struct class *dev_class;
 static struct device *dev;
+static struct cdev *cdev;
 
 int init_module(void) {
-    int major;
-    if ((major = register_chrdev(0, "checkers", &fops)) < 0) {
+    if (alloc_chrdev_region(&maj_min, 0, 1, "checkers")) {
         goto failure;
     }
 
-    maj_min = MKDEV(major, 0);
+    cdev = cdev_alloc();
+    cdev->owner = THIS_MODULE;
+    cdev->ops = &fops;
+    if (cdev_add(cdev, maj_min, 1) < 0) {
+        goto failure;
+    }
+
     dev_class = class_create(THIS_MODULE, "checkers");
     if (IS_ERR(dev_class)) {
         goto failure;
@@ -56,7 +64,7 @@ int init_module(void) {
     return 0;
 
 failure:
-    unregister_chrdev(major, "checkers");
+    unregister_chrdev_region(maj_min, 1);
     printk(KERN_ALERT "Failed to register checkers character device.\n");
     return -1;
 }
@@ -64,5 +72,6 @@ failure:
 void cleanup_module(void) {
     device_destroy(dev_class, maj_min);
     class_destroy(dev_class);
-    unregister_chrdev(MAJOR(maj_min), "checkers");
+    cdev_del(cdev);
+    unregister_chrdev_region(maj_min, 1);
 }
