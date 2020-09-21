@@ -32,7 +32,7 @@ static struct file_operations fops = {
     .release = release,
     .read = read
 };
-static dev_t devt;
+static dev_t maj_min;
 static struct class *dev_class;
 static struct device *dev;
 
@@ -42,12 +42,12 @@ int init_module(void) {
         goto failure;
     }
 
-    devt = MKDEV(major, 0);
+    maj_min = MKDEV(major, 0);
     dev_class = class_create(THIS_MODULE, "checkers");
     if (IS_ERR(dev_class)) {
         goto failure;
     }
-    dev = device_create(dev_class, NULL, devt, NULL, "checkers");
+    dev = device_create(dev_class, NULL, maj_min, NULL, "checkers");
     if (IS_ERR(dev)) {
         class_destroy(dev_class);
         goto failure;
@@ -62,7 +62,7 @@ failure:
 }
 
 void cleanup_module(void) {
-    device_destroy(dev_class, devt);
+    device_destroy(dev_class, maj_min);
     class_destroy(dev_class);
-    unregister_chrdev(MAJOR(devt), "checkers");
+    unregister_chrdev(MAJOR(maj_min), "checkers");
 }
