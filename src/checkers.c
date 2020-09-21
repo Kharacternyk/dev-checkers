@@ -2,7 +2,7 @@
 #include <linux/kernel.h>
 #include <linux/device.h>
 #include <linux/fs.h>
-#include <linux/cdev.h>
+#include <linux/miscdevice.h>
 #include <asm/uaccess.h>
 
 MODULE_LICENSE("GPL");
@@ -34,44 +34,22 @@ static struct file_operations fops = {
     .release = release,
     .read = read
 };
-static dev_t maj_min;
-static struct class *dev_class;
-static struct device *dev;
-static struct cdev *cdev;
+static struct miscdevice dev = {
+    .minor = MISC_DYNAMIC_MINOR,
+    .name = "checkers",
+    .nodename = "checkers",
+    .fops = &fops,
+    .mode = 0666
+};
 
 int init_module(void) {
-    if (alloc_chrdev_region(&maj_min, 0, 1, "checkers")) {
-        goto failure;
+    if (misc_register(&dev)) {
+        printk(KERN_ALERT "Failed to register checkers character device.\n");
+        return -1;
     }
-
-    cdev = cdev_alloc();
-    cdev->owner = THIS_MODULE;
-    cdev->ops = &fops;
-    if (cdev_add(cdev, maj_min, 1) < 0) {
-        goto failure;
-    }
-
-    dev_class = class_create(THIS_MODULE, "checkers");
-    if (IS_ERR(dev_class)) {
-        goto failure;
-    }
-    dev = device_create(dev_class, NULL, maj_min, NULL, "checkers");
-    if (IS_ERR(dev)) {
-        class_destroy(dev_class);
-        goto failure;
-    }
-
     return 0;
-
-failure:
-    unregister_chrdev_region(maj_min, 1);
-    printk(KERN_ALERT "Failed to register checkers character device.\n");
-    return -1;
 }
 
 void cleanup_module(void) {
-    device_destroy(dev_class, maj_min);
-    class_destroy(dev_class);
-    cdev_del(cdev);
-    unregister_chrdev_region(maj_min, 1);
+    misc_deregister(&dev);
 }
