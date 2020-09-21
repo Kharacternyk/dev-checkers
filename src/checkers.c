@@ -17,14 +17,13 @@ static int release(struct inode *inode, struct file *file) {
     return 0;
 }
 
+const char *msg = "You are reading /dev/checkers\n";
 static ssize_t read(struct file *file, char *buffer, size_t size, loff_t *offset) {
-    size_t i;
-    char *msg = "You are reading /dev/checkers\n";
-    size_t msgsize = strlen(msg);
-    for (i = 0; i < size; ++i) {
-        put_user("You are reading /dev/checkers\n"[i % msgsize], buffer++);
+    const char *cp = msg;
+    while (*cp && (cp - msg < size)) {
+        put_user(*cp++, buffer++);
     }
-    return size;
+    return cp - msg;
 }
 
 static struct file_operations fops = {
