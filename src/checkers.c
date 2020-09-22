@@ -8,12 +8,10 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Nazar Vinnichuk");
 
 static int open(struct inode *inode, struct file *file) {
-    try_module_get(THIS_MODULE);
     return 0;
 }
 
 static int release(struct inode *inode, struct file *file) {
-    module_put(THIS_MODULE);
     return 0;
 }
 
