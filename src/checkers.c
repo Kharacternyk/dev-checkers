@@ -7,14 +7,6 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Nazar Vinnichuk");
 
-static int open(struct inode *inode, struct file *file) {
-    return 0;
-}
-
-static int release(struct inode *inode, struct file *file) {
-    return 0;
-}
-
 const char *msg = "You are reading /dev/checkers\n";
 static ssize_t read(struct file *file, char *buffer, size_t size, loff_t *offset) {
     ssize_t length = strlen(msg) - *offset;
@@ -33,8 +25,6 @@ static ssize_t read(struct file *file, char *buffer, size_t size, loff_t *offset
 
 static struct file_operations fops = {
     .owner = THIS_MODULE,
-    .open = open,
-    .release = release,
     .read = read
 };
 
