@@ -10,8 +10,10 @@ MODULE_AUTHOR("Nazar Vinnichuk");
 #define BOARD_HEIGHT 8
 #define BOARD_WIDTH  8
 #define BOARD_SIZE (BOARD_WIDTH+1)*BOARD_HEIGHT
+
 #define BLACK_FIELD ' '
 #define WHITE_FIELD '#'
+#define DARK_STONE  '*'
 
 static char board[BOARD_SIZE];
 
@@ -51,9 +53,24 @@ static ssize_t read(struct file *file, char *buffer, size_t size, loff_t *offset
     return length;
 }
 
+static ssize_t write(struct file *file, const char *buffer, size_t size,
+                     loff_t *offset) {
+    size_t read_count = 0;
+    while (read_count++ < size) {
+        char c;
+        get_user(c, buffer);
+        c -= '0';
+        if (c < BOARD_SIZE) {
+            board[(size_t)c] = DARK_STONE;
+        }
+    }
+    return size;
+}
+
 static struct file_operations fops = {
     .owner = THIS_MODULE,
-    .read = read
+    .read = read,
+    .write = write
 };
 
 static struct miscdevice dev = {
