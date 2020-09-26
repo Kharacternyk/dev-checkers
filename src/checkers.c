@@ -7,30 +7,30 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Nazar Vinnichuk");
 
+#define BLACK_FIELD "◞"
+#define WHITE_FIELD "█"
+#define DARK_STONE  "◕"
+#define LIGHT_STONE "◴"
 #define BOARD_HEIGHT 8
 #define BOARD_WIDTH  8
-#define BOARD_SIZE (BOARD_WIDTH+1)*BOARD_HEIGHT
-
-#define BLACK_FIELD ' '
-#define WHITE_FIELD '#'
-#define DARK_STONE  '*'
+#define BOARD_SIZE ((BOARD_WIDTH+1)*3)*BOARD_HEIGHT
 
 static char board[BOARD_SIZE];
 
 static void init_board(void) {
     size_t i;
 
-    for (i = BOARD_WIDTH; i < BOARD_SIZE; i += BOARD_WIDTH + 1) {
-        board[i] = '\n';
+    for (i = BOARD_WIDTH * 3; i < BOARD_SIZE; i += (BOARD_WIDTH + 1) * 3) {
+        strncpy(&board[i], "  \n", 3);
     }
-    for (i = 0; i < BOARD_SIZE; i += 2) {
+    for (i = 0; i < BOARD_SIZE; i += 6) {
         if (!board[i]) {
-            board[i] = BLACK_FIELD;
+            strncpy(&board[i], BLACK_FIELD, 3);
         }
     }
-    for (i = 1; i < BOARD_SIZE; i += 2) {
+    for (i = 3; i < BOARD_SIZE; i += 6) {
         if (!board[i]) {
-            board[i] = WHITE_FIELD;
+            strncpy(&board[i], WHITE_FIELD, 3);
         }
     }
 }
@@ -70,7 +70,7 @@ static ssize_t write(struct file *file, const char *buffer, size_t size,
 static struct file_operations fops = {
     .owner = THIS_MODULE,
     .read = read,
-    .write = write
+    .write = NULL
 };
 
 static struct miscdevice dev = {
