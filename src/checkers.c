@@ -25,12 +25,18 @@ static void init_board(void) {
     }
     for (i = 0; i < BOARD_SIZE; i += 6) {
         if (!board[i]) {
-            strncpy(&board[i], BLACK_FIELD, 3);
+            strncpy(&board[i], WHITE_FIELD, 3);
         }
     }
     for (i = 3; i < BOARD_SIZE; i += 6) {
         if (!board[i]) {
-            strncpy(&board[i], WHITE_FIELD, 3);
+            if (i < BOARD_SIZE / 4) {
+                strncpy(&board[i], LIGHT_STONE, 3);
+            } else if (i > BOARD_SIZE - BOARD_SIZE / 4) {
+                strncpy(&board[i], DARK_STONE, 3);
+            } else {
+                strncpy(&board[i], BLACK_FIELD, 3);
+            }
         }
     }
 }
