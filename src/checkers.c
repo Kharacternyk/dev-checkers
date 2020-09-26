@@ -61,7 +61,7 @@ static ssize_t write(struct file *file, const char *buffer, size_t size,
         get_user(c, buffer);
         c -= '0';
         if (c < BOARD_SIZE) {
-            board[(size_t)c] = DARK_STONE;
+            strncpy(&board[(size_t)c * 3], DARK_STONE, 3);
         }
     }
     return size;
@@ -70,7 +70,7 @@ static ssize_t write(struct file *file, const char *buffer, size_t size,
 static struct file_operations fops = {
     .owner = THIS_MODULE,
     .read = read,
-    .write = NULL
+    .write = write
 };
 
 static struct miscdevice dev = {
