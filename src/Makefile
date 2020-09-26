@@ -1,9 +1,9 @@
 obj-m += checkers.o
 
-debug: format build load
+debug: unload format build load
 
 unload:
-	sudo rmmod checkers.ko
+	lsmod | grep checkers > /dev/null && sudo rmmod checkers.ko || true
 
 clean: 
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
