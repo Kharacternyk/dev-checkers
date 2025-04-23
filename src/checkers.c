@@ -7,13 +7,13 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Nazar Vinnichuk");
 
-#define BLACK_FIELD "◞"
-#define WHITE_FIELD "█"
-#define DARK_STONE  "◕"
-#define LIGHT_STONE "◴"
+#define BLACK_FIELD " "
+#define WHITE_FIELD "#"
+#define DARK_STONE  "*"
+#define LIGHT_STONE "o"
 #define BOARD_HEIGHT 8
 #define BOARD_WIDTH  8
-#define BOARD_SIZE ((BOARD_WIDTH+1)*3)*BOARD_HEIGHT
+#define BOARD_SIZE (((BOARD_WIDTH+1)*3)*BOARD_HEIGHT)
 
 static char board[BOARD_SIZE];
 
